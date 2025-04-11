@@ -262,9 +262,14 @@ func shouldRetry(c *gin.Context, openaiErr *dto.OpenAIErrorWithStatusCode, retry
 	}
 	if openaiErr.StatusCode/100 == 5 {
 		// 超时不重试
-		if openaiErr.StatusCode == 504 || openaiErr.StatusCode == 524 {
-			return false
-		}
+		// if openaiErr.StatusCode == 504 || openaiErr.StatusCode == 524 {
+		// 	return false
+		// }
+		// 根据重试次数等待不同时间，延长重试时间
+		retryAttempt := common.RetryTimes - retryTimes // Calculate the current retry attempt (0-indexed)
+		sleepDuration := time.Duration(retryAttempt+1) * time.Second
+		common.LogInfo(c, fmt.Sprintf("重试等待 %d 秒", sleepDuration))
+		time.Sleep(sleepDuration)
 		return true
 	}
 	if openaiErr.StatusCode == http.StatusBadRequest {
