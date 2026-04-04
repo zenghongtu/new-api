@@ -40,6 +40,16 @@ type ChannelOtherSettings struct {
 	UpstreamModelUpdateLastDetectedModels []string      `json:"upstream_model_update_last_detected_models,omitempty"` // 上次检测到的可加入模型
 	UpstreamModelUpdateLastRemovedModels  []string      `json:"upstream_model_update_last_removed_models,omitempty"`  // 上次检测到的可删除模型
 	UpstreamModelUpdateIgnoredModels      []string      `json:"upstream_model_update_ignored_models,omitempty"`       // 手动忽略的模型
+	BlockedUsers                          []int         `json:"blocked_users,omitempty"`                              // 禁止调用此渠道的用户ID列表
+}
+
+func (s *ChannelOtherSettings) IsUserBlocked(userID int) bool {
+	for _, id := range s.BlockedUsers {
+		if id == userID {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *ChannelOtherSettings) IsOpenRouterEnterprise() bool {

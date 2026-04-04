@@ -214,6 +214,7 @@ const EditChannelModal = (props) => {
     upstream_model_update_last_check_time: 0,
     upstream_model_update_last_detected_models: [],
     upstream_model_update_ignored_models: '',
+    blocked_users: [],
   };
   const [batch, setBatch] = useState(false);
   const [multiToSingle, setMultiToSingle] = useState(false);
@@ -907,6 +908,9 @@ const EditChannelModal = (props) => {
           )
             ? parsedSettings.upstream_model_update_ignored_models.join(',')
             : '';
+          data.blocked_users = Array.isArray(parsedSettings.blocked_users)
+            ? parsedSettings.blocked_users.map(String)
+            : [];
         } catch (error) {
           console.error('解析其他设置失败:', error);
           data.azure_responses_version = '';
@@ -925,6 +929,7 @@ const EditChannelModal = (props) => {
           data.upstream_model_update_last_check_time = 0;
           data.upstream_model_update_last_detected_models = [];
           data.upstream_model_update_ignored_models = '';
+          data.blocked_users = [];
         }
       } else {
         // 兼容历史数据：老渠道没有 settings 时，默认按 json 展示
@@ -942,6 +947,7 @@ const EditChannelModal = (props) => {
         data.upstream_model_update_last_check_time = 0;
         data.upstream_model_update_last_detected_models = [];
         data.upstream_model_update_ignored_models = '';
+        data.blocked_users = [];
       }
 
       if (
@@ -1803,6 +1809,13 @@ const EditChannelModal = (props) => {
       settings.upstream_model_update_last_check_time = 0;
     }
 
+    settings.blocked_users = Array.isArray(localInputs.blocked_users)
+      ? localInputs.blocked_users.map(Number).filter((n) => !isNaN(n) && n > 0)
+      : [];
+    if (settings.blocked_users.length === 0) {
+      delete settings.blocked_users;
+    }
+
     localInputs.settings = JSON.stringify(settings);
 
     // 清理不需要发送到后端的字段
@@ -1829,6 +1842,7 @@ const EditChannelModal = (props) => {
     delete localInputs.upstream_model_update_last_check_time;
     delete localInputs.upstream_model_update_last_detected_models;
     delete localInputs.upstream_model_update_ignored_models;
+    delete localInputs.blocked_users;
 
     let res;
     localInputs.auto_ban = localInputs.auto_ban ? 1 : 0;
@@ -2436,6 +2450,13 @@ const EditChannelModal = (props) => {
                     maxLength={255}
                     showClear
                     onChange={(value) => handleInputChange('remark', value)}
+                  />
+                  <Form.TagInput
+                    field='blocked_users'
+                    label={t('禁止用户')}
+                    placeholder={t('输入用户ID后按回车')}
+                    showClear
+                    onChange={(value) => handleInputChange('blocked_users', value)}
                   />
 
                   <Row gutter={12}>

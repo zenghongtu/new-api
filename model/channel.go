@@ -887,6 +887,11 @@ func (channel *Channel) GetOtherSettings() dto.ChannelOtherSettings {
 	return setting
 }
 
+func (channel *Channel) IsUserBlocked(userID int) bool {
+	settings := channel.GetOtherSettings()
+	return settings.IsUserBlocked(userID)
+}
+
 func (channel *Channel) SetOtherSettings(setting dto.ChannelOtherSettings) {
 	settingBytes, err := common.Marshal(setting)
 	if err != nil {
