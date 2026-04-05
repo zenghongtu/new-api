@@ -80,7 +80,7 @@ jobs:
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: |
-            ${{ github.repository_owner }}/new-api
+            ${{ secrets.DOCKERHUB_USERNAME }}/new-api
 #            ghcr.io/${{ env.GHCR_REPOSITORY }}
 
       - name: Build & push single-arch (to both registries)
@@ -91,27 +91,27 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            ${{ github.repository_owner }}/new-api:${{ env.TAG }}-${{ matrix.arch }}
-            ${{ github.repository_owner }}/new-api:latest-${{ matrix.arch }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/new-api:${{ env.TAG }}-${{ matrix.arch }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/new-api:latest-${{ matrix.arch }}
 #            ghcr.io/${{ env.GHCR_REPOSITORY }}:${{ env.TAG }}-${{ matrix.arch }}
 #            ghcr.io/${{ env.GHCR_REPOSITORY }}:latest-${{ matrix.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: mode=max
-          sbom: true
+          provenance: false
+          sbom: false
 
       - name: Install cosign
         uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
 
       - name: Sign image with cosign
-        run: cosign sign --yes ${{ github.repository_owner }}/new-api@${{ steps.build.outputs.digest }}
+        run: cosign sign --yes ${{ secrets.DOCKERHUB_USERNAME }}/new-api@${{ steps.build.outputs.digest }}
 
       - name: Output digest
         run: |
           echo "### Docker Image Digest (${{ matrix.arch }})" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "${{ github.repository_owner }}/new-api:${{ env.TAG }}-${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
+          echo "${{ secrets.DOCKERHUB_USERNAME }}/new-api:${{ env.TAG }}-${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
@@ -141,22 +141,22 @@ jobs:
       - name: Create & push manifest (Docker Hub - version)
         run: |
           docker buildx imagetools create \
-            -t ${{ github.repository_owner }}/new-api:${TAG} \
-            ${{ github.repository_owner }}/new-api:${TAG}-amd64 \
-            ${{ github.repository_owner }}/new-api:${TAG}-arm64
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/new-api:${TAG} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/new-api:${TAG}-amd64 \
+            ${{ secrets.DOCKERHUB_USERNAME }}/new-api:${TAG}-arm64
 
       - name: Create & push manifest (Docker Hub - latest)
         run: |
           docker buildx imagetools create \
-            -t ${{ github.repository_owner }}/new-api:latest \
-            ${{ github.repository_owner }}/new-api:latest-amd64 \
-            ${{ github.repository_owner }}/new-api:latest-arm64
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/new-api:latest \
+            ${{ secrets.DOCKERHUB_USERNAME }}/new-api:latest-amd64 \
+            ${{ secrets.DOCKERHUB_USERNAME }}/new-api:latest-arm64
 
       - name: Output manifest digest
         run: |
           echo "### Multi-arch Manifest" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          docker buildx imagetools inspect ${{ github.repository_owner }}/new-api:${TAG} >> $GITHUB_STEP_SUMMARY
+          docker buildx imagetools inspect ${{ secrets.DOCKERHUB_USERNAME }}/new-api:${TAG} >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       # ---- GHCR ----
